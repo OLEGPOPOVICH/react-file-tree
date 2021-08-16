@@ -1,23 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+// http://164.90.161.80:3000/docs - сваггер с докой
+// http://164.90.161.80:3000/api/content - единственный и неповторимый эндпоинт куда ходить за данными
+// http://164.90.161.80/ - ui - референс куда смотреть если по заданию не ясно что и как делать
+
+import { useEffect } from "react";
+import { DataService } from "./API/DataService";
+import { TreeList } from "./components/treeList/TreeList";
+import { useFetching } from "./hooks/useFetching";
+import { useTree } from "./hooks/useTree";
+import "./styles/App.css"
 
 function App() {
+  const [tree, initTree, addChildTree] = useTree();
+  const [isLoading, error, dataFetching] = useFetching(async () => {
+    const { data } = await DataService.getAll();
+    initTree(data.children);
+  });
+
+  useEffect(() => {
+    dataFetching();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <TreeList
+        list={tree}
+        childIndexes={[]}
+        addChildTree={addChildTree}
+      />
     </div>
   );
 }
